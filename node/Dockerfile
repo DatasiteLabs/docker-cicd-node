@@ -29,5 +29,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 ENV SONAR_RUNNER_HOME "/usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-linux"
 
 ENV PATH="${SONAR_RUNNER_HOME}/bin:${PATH}"
+COPY --chown=1000 tmp/.npmrc /home/node/.npmrc
 EXPOSE 3000
 CMD ["node"]

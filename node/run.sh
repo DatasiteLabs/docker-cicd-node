@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
-#docker build --no-cache --squash --pull -t mrllsvc/node-git-ubuntu:3 mrllsvc/node-git-ubuntu:latest .
+curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+[[ $1 ]] || { echo "missing an argument. first argument must be jfrog email" >&2; exit 1; }
+[[ $2 ]] || { echo "missing an argument. first argument must be jfrog token for user with email: ${1}" >&2; exit 1; }
+jfrog_email="${1}"
+jfrog_password="${2}"
+
+${curDir}/inject-npmrc.sh ${jfrog_email} ${jfrog_password}
+
+docker build --no-cache --squash --pull -t mrllsvc/node-git-ubuntu:4 -t mrllsvc/node-git-ubuntu:latest .
+docker push mrllsvc/node-git-ubuntu:4
+docker push mrllsvc/node-git-ubuntu:latest
 
 docker run \
 		-d -it --rm -p 3000:3000 \
 		--name node-git-ubuntu \
 		mrllsvc/node-git-ubuntu:latest
-#
-#docker push mrllsvc/node-git-ubuntu:3
-#docker push mrllsvc/node-git-ubuntu:latest
