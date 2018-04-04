@@ -6,10 +6,12 @@ curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 jfrog_email="${1}"
 jfrog_password="${2}"
 
+docker_version=5
+
 ${curDir}/inject-npmrc.sh ${jfrog_email} ${jfrog_password}
 
-docker build --no-cache --squash --pull -t mrllsvc/node-git-ubuntu:4 -t mrllsvc/node-git-ubuntu:latest .
-docker push mrllsvc/node-git-ubuntu:4
+docker build --no-cache --pull -t mrllsvc/node-git-ubuntu:${docker_version} -t mrllsvc/node-git-ubuntu:latest .
+docker push mrllsvc/node-git-ubuntu:${docker_version}
 docker push mrllsvc/node-git-ubuntu:latest
 
 docker run \

@@ -30,5 +30,6 @@ ENV SONAR_RUNNER_HOME "/usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-l
 
 ENV PATH="${SONAR_RUNNER_HOME}/bin:${PATH}"
 COPY --chown=1000 tmp/.npmrc /home/node/.npmrc
+COPY --chown=1000 tmp/.gitconfig /home/node/.gitconfig
 EXPOSE 3000
 CMD ["node"]
