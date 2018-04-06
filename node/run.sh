@@ -10,11 +10,11 @@ docker_version=5
 
 ${curDir}/inject-npmrc.sh ${jfrog_email} ${jfrog_password}
 
-docker build --no-cache --pull -t mrllsvc/node-git-ubuntu:${docker_version} -t mrllsvc/node-git-ubuntu:latest .
-docker push mrllsvc/node-git-ubuntu:${docker_version}
+docker build --no-cache --pull -t mrllsvc/node-git-ubuntu:"${docker_version}" -t mrllsvc/node-git-ubuntu:latest .
+docker push mrllsvc/node-git-ubuntu:"${docker_version}"
 docker push mrllsvc/node-git-ubuntu:latest
 
 docker run \
 		-d -it --rm -p 3000:3000 \
 		--name node-git-ubuntu \
-		mrllsvc/node-git-ubuntu:latest
+		mrllsvc/node-git-ubuntu:"${docker_version}"
