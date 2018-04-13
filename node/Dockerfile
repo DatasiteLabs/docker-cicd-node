@@ -24,12 +24,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends git \
 RUN apt-get update && apt-get install -y --no-install-recommends \
 	unzip && \
 	wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
-	unzip sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux -d /usr/local/share/
+	unzip sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux -d /usr/local/share/ && \
+	chown -R node: /usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-linux
 
 ENV SONAR_RUNNER_HOME "/usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-linux"
 
 ENV PATH="${SONAR_RUNNER_HOME}/bin:${PATH}"
-COPY --chown=1000 tmp/.npmrc /home/node/.npmrc
-COPY --chown=1000 tmp/.gitconfig /home/node/.gitconfig
+VOLUME /home/node
 EXPOSE 3000
 CMD ["node"]

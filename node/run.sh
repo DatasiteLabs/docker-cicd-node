@@ -6,7 +6,7 @@ curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 #jfrog_email="${1}"
 #jfrog_password="${2}"
 
-docker_version=6
+docker_version=7
 
 #${curDir}/inject-npmrc.sh ${jfrog_email} ${jfrog_password}
 
