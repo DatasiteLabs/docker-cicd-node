@@ -1,4 +1,5 @@
 FROM openjdk:8-jdk
+LABEL version="1.0" maintainer="Kayla Altepeter"
 ENV SONAR_SCANNER_VERSION 3.0.3.778
 ENV NODE_VERSION 8.9.4
 
