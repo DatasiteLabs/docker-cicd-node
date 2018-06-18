@@ -23,6 +23,18 @@ Execute against container
 docker exec -it cicd-npm-chrome bash
 ```
 
+### app requirements
+#### e2e with protractor
+add the following to protractor config
+```
+capabilities: {
+    browserName: 'chrome',
+    chromeOptions: {
+      args: [ "--headless", "--disable-gpu", "--window-size=1024,768", "--no-sandbox" ]
+    }
+  },
+```
+
 Run example code. replace {appName} with your angular app
 ```bash
 cd ~/test
