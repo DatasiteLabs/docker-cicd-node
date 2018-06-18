@@ -4,7 +4,7 @@ Docker container for CICD builds that has openjdk, npm, sonar runner
 ## PhantomJS
 Example build command
 ```docker
-docker build --pull -t merrillcorporation/docker-cicd-node/phantomjs:1 .
+docker build --pull -t merrillcorporation/docker-cicd-node/phantomjs:1 ./phantomjs
 ```
 
 Run the following in your code workspace.
@@ -21,10 +21,18 @@ Execute against container
 docker exec -it cicd-node-phantomjs bash
 ```
 
+### Application Requirements
+#### unit testing with karma/jasmine or mocha
+Run example code. replace {appName} with your angular app
+```bash
+cd ~/test
+npm test
+```
+
 ## Chrome headless
 Example build command
 ```docker
-docker build --pull -t merrillcorporation/docker-cicd-node/chrome-headless:1 .
+docker build --pull -t merrillcorporation/docker-cicd-node/chrome-headless:1 ./chrome-headless
 ```
 
 Run the following in your code workspace.
