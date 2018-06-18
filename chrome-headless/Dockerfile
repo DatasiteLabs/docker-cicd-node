@@ -23,7 +23,7 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*; \
     fi
 
-# Add a chrome user and setup home dir.
+# Add a node user and setup home dir.
 RUN groupadd --system --gid 1000 node && \
     useradd --system --create-home --uid 1000 --gid node --groups audio,video --shell /bin/bash node && \
     mkdir --parents /home/node/reports && \
