@@ -3,10 +3,13 @@ LABEL version="1.0" maintainer="Kayla Altepeter"
 ENV SONAR_SCANNER_VERSION 3.0.3.778
 ENV NODE_VERSION 8.9.4
 
-# referenced from: https://github.com/nodejs/docker-node/blob/994f8286cb0efc92578902d5fd11182f63a59869/8/Dockerfile
-# install node
-RUN groupadd --gid 1000 node \
-  && useradd --uid 1000 --gid node --shell /bin/bash --create-home node
+  # Add a chrome user and setup home dir.
+RUN groupadd --system --gid 1000 node && \
+    useradd --system --create-home --uid 1000 --gid node --groups audio,video --shell /bin/bash node && \
+    mkdir --parents /home/node/reports && \
+    chown --recursive node:node /home/node
+
+USER node
 
 RUN apt-get update && curl -sL https://deb.nodesource.com/setup_8.x | bash - && \
 	 apt-get install -y nodejs && \
