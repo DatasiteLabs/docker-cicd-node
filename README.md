@@ -1,10 +1,30 @@
 # docker-cicd-npm
 Docker container for CICD builds that has openjdk, npm, sonar runner
 
+## PhantomJS
+Example build command
+```docker
+docker build --pull -t merrillcorporation/docker-cicd-node/phantomjs:1 .
+```
+
+Run the following in your code workspace.
+```docker
+docker run \
+    -d -it --rm -p 3000:3000 \
+    -v $(pwd):/home/node/test \
+    --name cicd-node-phantomjs \
+    merrillcorporation/docker-cicd-node/phantomjs:1
+```
+
+Execute against container
+```docker
+docker exec -it cicd-node-phantomjs bash
+```
+
 ## Chrome headless
 Example build command
 ```docker
-docker build --pull -t mrllsvc/docker-cicd-npm/chrome-headless:1 .
+docker build --pull -t merrillcorporation/docker-cicd-node/chrome-headless:1 .
 ```
 
 Run the following in your code workspace.
@@ -14,16 +34,16 @@ docker run \
     -p 49152:49152 \
     -p 4200:4200 \
     -v $(pwd):/home/node/test \
-    --name cicd-npm-chrome \
-    mrllsvc/docker-cicd-npm/chrome-headless:1
+    --name cicd-node-chrome \
+    merrillcorporation/docker-cicd-node/chrome-headless:1
 ```
 
 Execute against container
 ```docker
-docker exec -it cicd-npm-chrome bash
+docker exec -it cicd-node-chrome bash
 ```
 
-### app requirements
+### Application Requirements
 #### e2e with protractor
 add the following to protractor config
 ```
