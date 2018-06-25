@@ -88,6 +88,8 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /src/*.deb
 
+RUN apt-get update && apt-get install -y --no-install-recommends git
+
 # install dumb-init
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
 ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 /usr/local/bin/dumb-init
