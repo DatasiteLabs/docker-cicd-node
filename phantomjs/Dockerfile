@@ -11,6 +11,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     netbase \
     wget \
     vim \
+    openssh-client \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex; \
@@ -82,7 +84,7 @@ ENV PATH="${SONAR_RUNNER_HOME}/bin:${PATH}"
 
 # http://phantomjs.org/download.html
 # install phantomjs
-RUN apt-get update && apt-get install -y --no-install-recommends git \
+RUN apt-get update && apt-get install -y --no-install-recommends \
 	libfontconfig && \
 	wget https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2 && \
 	tar xvjf phantomjs-2.1.1-linux-x86_64.tar.bz2 -C /usr/local/share/ && \

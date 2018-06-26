@@ -5,12 +5,15 @@ ENV NODE_VERSION 8.11.3
 
 # install tools
 # https://github.com/docker-library/buildpack-deps/blob/b0fc01aa5e3aed6820d8fed6f3301e0542fbeb36/sid/curl/Dockerfile
+# plus git and ssh
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     curl \
     netbase \
     wget \
     vim \
+    openssh-client \
+    git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex; \
@@ -87,8 +90,6 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     && apt-get install -y google-chrome-unstable --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /src/*.deb
-
-RUN apt-get update && apt-get install -y --no-install-recommends git
 
 # install dumb-init
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
