@@ -1,7 +1,7 @@
 FROM openjdk:10-jdk-slim
 LABEL version="1.0" maintainer="Kayla Altepeter"
 ENV SONAR_SCANNER_VERSION 3.0.3.778
-ENV NODE_VERSION 8.9.4
+ENV NODE_VERSION 9.11.2
 
 # install tools
 # https://github.com/docker-library/buildpack-deps/blob/b0fc01aa5e3aed6820d8fed6f3301e0542fbeb36/sid/curl/Dockerfile

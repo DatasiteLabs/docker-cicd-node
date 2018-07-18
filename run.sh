@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-docker_version=7
+docker_version=9.11.2
 
-docker build --no-cache --pull -t mrllsvc/node-git-ubuntu:"${docker_version}" -t mrllsvc/node-git-ubuntu:latest .
+docker build --no-cache --pull -t mrllsvc/node-git-ubuntu:"${docker_version}" -t mrllsvc/node-git-ubuntu:latest ./chrome-headless
 docker push mrllsvc/node-git-ubuntu:"${docker_version}"
 docker push mrllsvc/node-git-ubuntu:latest
 
