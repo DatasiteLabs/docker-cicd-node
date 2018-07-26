@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
+set -o errexit
+set -o nounset
+
 curDir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-docker_version=9.11.2
+docker_version=$(cat VERSION)
 
-docker build --no-cache --pull -t mrllsvc/node-git-ubuntu:"${docker_version}" -t mrllsvc/node-git-ubuntu:latest ./chrome-headless
-docker push mrllsvc/node-git-ubuntu:"${docker_version}"
-docker push mrllsvc/node-git-ubuntu:latest
+docker build --no-cache --pull -t mrllsvc/docker-cicd-node:"${docker_version}-chrome" ./chrome-headless
+docker push mrllsvc/docker-cicd-node:"${docker_version}-chrome"
+docker build --no-cache --pull -t mrllsvc/docker-cicd-node:"${docker_version}-phantomjs" ./phantomjs
+docker push mrllsvc/docker-cicd-node:"${docker_version}-phantomjs"
 
 docker run \
 		-d -it --rm -p 3000:3000 \
-		--name node-git-ubuntu \
-		mrllsvc/node-git-ubuntu:"${docker_version}"
+		--name docker-cicd-node-chrome \
+		mrllsvc/docker-cicd-node:"${docker_version}-chrome"
