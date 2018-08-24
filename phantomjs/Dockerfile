@@ -1,7 +1,7 @@
 FROM openjdk:10-jdk-slim
 LABEL version="1.0" maintainer="Kayla Altepeter"
 ENV SONAR_SCANNER_VERSION 3.0.3.778
-ENV NODE_VERSION 10.7.0
+ENV NODE_VERSION 9.11.2
 ENV YARN_VERSION 1.7.0
 
 # install tools
@@ -72,6 +72,7 @@ RUN buildDeps='xz-utils' \
     && grep " node-v$NODE_VERSION-linux-$ARCH.tar.xz\$" SHASUMS256.txt | sha256sum -c - \
     && tar -xJf "node-v$NODE_VERSION-linux-$ARCH.tar.xz" -C /usr/local --strip-components=1 --no-same-owner \
     && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
+    && npm install -g npm@latest \
     && apt-get purge -y --auto-remove $buildDeps \
     && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
