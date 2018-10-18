@@ -98,7 +98,7 @@ RUN set -ex \
 # install sonar-scanner
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip && \
-    wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
+    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
     unzip sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux -d /usr/local/share/ && \
     chown -R node: /usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-linux
 
