@@ -1,6 +1,6 @@
 FROM openjdk:10-jdk-slim
 LABEL version="1.0" maintainer="Kayla Altepeter"
-ENV SONAR_SCANNER_VERSION 3.0.3.778
+ENV SONAR_SCANNER_VERSION 3.2.0.1227
 ENV NODE_VERSION 9.11.2
 ENV YARN_VERSION 1.7.0
 
@@ -98,7 +98,7 @@ RUN set -ex \
 # install sonar-scanner
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip && \
-    wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
+    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
     unzip sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux -d /usr/local/share/ && \
     chown -R node: /usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-linux
 
@@ -109,7 +109,7 @@ ENV PATH="${SONAR_RUNNER_HOME}/bin:${PATH}"
 RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
-    && apt-get install -y google-chrome-unstable --no-install-recommends \
+    && apt-get install -y google-chrome-stable --no-install-recommends \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /src/*.deb
 
