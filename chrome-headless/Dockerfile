@@ -1,6 +1,6 @@
 FROM openjdk:10-jdk-slim
 LABEL version="1.0" maintainer="Kayla Altepeter"
-ENV SONAR_SCANNER_VERSION 3.0.3.778
+ENV SONAR_SCANNER_VERSION 3.2.0.1227
 ENV NODE_VERSION 9.11.2
 ENV YARN_VERSION 1.7.0
 
@@ -98,7 +98,7 @@ RUN set -ex \
 # install sonar-scanner
 RUN apt-get update && apt-get install -y --no-install-recommends \
     unzip && \
-    wget https://sonarsource.bintray.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
+    wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux.zip && \
     unzip sonar-scanner-cli-${SONAR_SCANNER_VERSION}-linux -d /usr/local/share/ && \
     chown -R node: /usr/local/share/sonar-scanner-${SONAR_SCANNER_VERSION}-linux
 
