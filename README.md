@@ -1,6 +1,10 @@
 # docker-cicd-npm
 Docker container for CICD builds that has openjdk, npm, sonar runner
 
+
+[![Docker Build Status](https://img.shields.io/docker/build/merrillcorporation/docker-cicd-node.svg?style=for-the-badge)](https://hub.docker.com/r/merrillcorporation/docker-cicd-node/builds/)
+
+
 ## PhantomJS
 Example build command
 ```docker
