@@ -26,6 +26,10 @@ RUN set -ex; \
     rm -rf /var/lib/apt/lists/*; \
     fi
 
+# Add jfrog cli
+RUN curl -fL https://getcli.jfrog.io | sh \
+    && mv ./jfrog /usr/local/bin/jfrog \
+    && chmod 777 /usr/local/bin/jfrog
 
 # Add a node user and setup home dir.
 RUN groupadd --system --gid 1000 node && \
