@@ -1,8 +1,10 @@
 FROM openjdk:10-jdk-slim
 LABEL version="1.0" maintainer="Kayla Altepeter"
+# ENV CHROME_VERSION 72.0.3626.81
 ENV SONAR_SCANNER_VERSION 3.2.0.1227
 ENV NODE_VERSION 9.11.2
 ENV YARN_VERSION 1.7.0
+ENV CHROME_DRIVER_VERSION 2.46
 
 # install tools
 # https://github.com/docker-library/buildpack-deps/blob/b0fc01aa5e3aed6820d8fed6f3301e0542fbeb36/sid/curl/Dockerfile
@@ -115,6 +117,9 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
     && apt-get update \
     && apt-get install -y google-chrome-stable --no-install-recommends \
+    && wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip \
+    && unzip chromedriver_linux64.zip -d /usr/local/bin/ \
+    && rm chromedriver_linux64.zip \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /src/*.deb
 
