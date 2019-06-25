@@ -14,6 +14,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     vim \
     openssh-client \
     git \
+    python3 \
+    jq \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -ex; \
