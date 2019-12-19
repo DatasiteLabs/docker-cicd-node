@@ -1,6 +1,8 @@
 FROM node:12.14.0-buster-slim
 LABEL version="1.1" maintainer="Kayla Altepeter"
 
+RUN apt-get update && apt-get install git -y
+
 # Add jfrog cli
 RUN curl -fL https://getcli.jfrog.io | sh \
     && mv ./jfrog /usr/local/bin/jfrog \
