@@ -14,7 +14,6 @@ Docker container for CI/CD builds that has:
 [![Docker Build Status](https://img.shields.io/docker/build/merrillcorporation/docker-cicd-node.svg?style=for-the-badge)](https://hub.docker.com/r/merrillcorporation/docker-cicd-node/builds/)
 
 ## Chrome headless
-
 Example build command
 ```docker
 docker build --pull -t merrillcorporation/docker-cicd-node/chrome-headless:1 ./chrome-headless
