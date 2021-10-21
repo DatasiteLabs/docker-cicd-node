@@ -7,6 +7,4 @@ readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 docker_version=$(cat VERSION)
 
-docker build --no-cache --pull -t docker-cicd-node:"${docker_version}-chrome" "${__dir}/"chrome-headless
-# docker build --no-cache --pull -t mrllsvc/docker-cicd-node:"${docker_version}-chrome" "${__dir}/"chrome-headless
-# docker push mrllsvc/docker-cicd-node:"${docker_version}-chrome"
+docker build --no-cache --pull -t datasite:"${docker_version}-chrome" -t datasite:latest-chrome "${__dir}/"chrome-headless
