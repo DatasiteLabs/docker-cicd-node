@@ -1,11 +1,17 @@
-FROM node:12.14.0-buster-slim
-LABEL version="1.1" maintainer="Kayla Altepeter"
-ENV CHROME_DRIVER_VERSION 2.46
+FROM node:12.22.7-buster-slim
+LABEL version="1.2" maintainer="Kayla Altepeter"
+ENV CHROME_DRIVER_VERSION 95.0.4638.17
+ENV CHROMEDRIVER_DIR /chromedriver
+# Put Chromedriver into the PATH
+ENV PATH $CHROMEDRIVER_DIR:$PATH
 
-RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google.list' \
-    && apt-get update && apt-get install -y --no-install-recommends \
-    google-chrome-stable \
+# We need wget to set up the PPA and xvfb to have a virtual screen and unzip to install the Chromedriver
+RUN apt-get update && \
+    apt-get install -y wget \
+    libaio1 \
+    gnupg2 \
+    xvfb \ 
+    unzip \
     ca-certificates \
     netbase \
     vim \
@@ -14,14 +20,39 @@ RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key
     python3 \
     jq \
     unzip \
-    curl
+    curl \
+    libcurl4 \
+    # cypress deps
+    libgtk2.0-0 \
+    libgtk-3-0 \
+    libnotify-dev \
+    libgconf-2-4 \
+    libgbm-dev \
+    libnss3 \
+    libxss1 \
+    libasound2 \
+    libxtst6 \
+    xauth \
+    xvfb
 
-# Install latest chrome dev package. following example: https://github.com/ebidel/lighthouse-ci/blob/master/builder/Dockerfile
-RUN wget https://chromedriver.storage.googleapis.com/${CHROME_DRIVER_VERSION}/chromedriver_linux64.zip \
-    && unzip chromedriver_linux64.zip -d /usr/local/bin/ \
-    && rm chromedriver_linux64.zip \
-    && rm -rf /var/lib/apt/lists/* \
-    && rm -rf /src/*.deb
+# Set up the Chrome PPA    
+RUN wget -qO - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg && \
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list
+
+# Update the package list and install chrome
+RUN apt-get update -y --no-install-recommends
+RUN apt-get install -y google-chrome-stable 
+
+# Set up Chromedriver Environment variables
+RUN mkdir $CHROMEDRIVER_DIR
+
+# Install latest chrome dev package. following example: old: https://github.com/ebidel/lighthouse-ci/blob/master/builder/Dockerfile
+# new: https://gist.github.com/varyonic/dea40abcf3dd891d204ef235c6e8dd79
+# Download and install Chromedriver
+RUN CHROMEVER=$(google-chrome --product-version | grep -o "[^\.]*\.[^\.]*\.[^\.]*") && \
+    DRIVERVER=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROMEVER") && \
+    wget -q --continue -P /chromedriver "http://chromedriver.storage.googleapis.com/$DRIVERVER/chromedriver_linux64.zip" && \
+    unzip /chromedriver/chromedriver* -d /chromedriver
 
 # Add jfrog cli
 RUN curl -fL https://getcli.jfrog.io | sh \
@@ -30,8 +61,23 @@ RUN curl -fL https://getcli.jfrog.io | sh \
 
 # install dumb-init
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
-ADD https://github.com/Yelp/dumb-init/releases/download/v1.2.0/dumb-init_1.2.0_amd64 /usr/local/bin/dumb-init
+RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
 RUN chmod +x /usr/local/bin/dumb-init
+
+# a few environment variables to make NPM installs easier
+# good colors for most applications
+ENV TERM xterm
+# avoid million NPM install messages
+ENV npm_config_loglevel warn
+# allow installing when the main user is root
+ENV npm_config_unsafe_perm true
+
+# versions of local tools
+RUN echo  " node version:    $(node -v) \n" \
+  "npm version:     $(npm -v) \n" \
+  "yarn version:    $(yarn -v) \n" \
+  "debian version:  $(cat /etc/debian_version) \n" \
+  "user:            $(whoami) \n"
 
 USER node
 VOLUME /home/node
