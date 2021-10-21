@@ -1,10 +1,20 @@
-# docker-cicd-npm
-Docker container for CICD builds that has openjdk, npm, sonar runner
+# docker-cicd-node
+
+Docker container for CI/CD builds that has:
+
+- JFrog CLI
+- Chromium
+- Node
+- NPM/Yarn
+- Support for Cypress/Mongo In-Memory
+- JQ
+- Python
 
 
 [![Docker Build Status](https://img.shields.io/docker/build/merrillcorporation/docker-cicd-node.svg?style=for-the-badge)](https://hub.docker.com/r/merrillcorporation/docker-cicd-node/builds/)
 
 ## Chrome headless
+
 Example build command
 ```docker
 docker build --pull -t merrillcorporation/docker-cicd-node/chrome-headless:1 ./chrome-headless
@@ -27,7 +37,9 @@ docker exec -it cicd-node-chrome bash
 ```
 
 ### Application Requirements
+
 #### e2e with protractor
+
 add the following to protractor config
 ```
 capabilities: {
