@@ -15,4 +15,4 @@ set -o nounset
 readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 
-gh release create -m "$(git --no-pager log -n 1 --pretty=%B)" "$(cat "${__dir}/VERSION")"
+gh release create --generate-notes "$(cat "${__dir}/VERSION")"
