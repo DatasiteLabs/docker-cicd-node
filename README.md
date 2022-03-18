@@ -11,7 +11,7 @@ Docker container for CI/CD builds that has:
 - Python
 
 
-[![Docker Build Status](https://img.shields.io/docker/build/merrillcorporation/docker-cicd-node.svg?style=for-the-badge)](https://hub.docker.com/r/merrillcorporation/docker-cicd-node/builds/)
+[![Docker](https://github.com/DatasiteLabs/docker-cicd-node/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/DatasiteLabs/docker-cicd-node/actions/workflows/docker-publish.yml) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/DatasiteLabs/docker-cicd-node?sort=semver)
 
 ## Chrome headless
 
