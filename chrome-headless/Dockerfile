@@ -1,13 +1,13 @@
-FROM node:12.22.7-buster-slim
+FROM node:14.19.0-buster-slim
 LABEL version="1.2" maintainer="Kayla Altepeter"
-ENV CHROME_DRIVER_VERSION 95.0.4638.17
+ENV CHROME_DRIVER_VERSION 99.0.4844.51
 ENV CHROMEDRIVER_DIR /chromedriver
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
 
 # We need wget to set up the PPA and xvfb to have a virtual screen and unzip to install the Chromedriver
 RUN apt-get update && \
-    apt-get install -y wget \
+    apt-get install --no-install-recommends -y wget \
     libaio1 \
     gnupg2 \
     xvfb \ 
@@ -22,7 +22,7 @@ RUN apt-get update && \
     unzip \
     curl \
     libcurl4 \
-    # cypress deps
+    # cypress deps: https://github.com/cypress-io/cypress-docker-images/blob/master/base/14.17.0/Dockerfile
     libgtk2.0-0 \
     libgtk-3-0 \
     libnotify-dev \
@@ -33,26 +33,70 @@ RUN apt-get update && \
     libasound2 \
     libxtst6 \
     xauth \
-    xvfb
+    xvfb \
+    # install emoji font
+    fonts-noto-color-emoji \
+    # install Chinese fonts
+    # this list was copied from https://github.com/jim3ma/docker-leanote
+    fonts-arphic-bkai00mp \
+    fonts-arphic-bsmi00lp \
+    fonts-arphic-gbsn00lp \
+    fonts-arphic-gkai00mp \
+    fonts-arphic-ukai \
+    fonts-arphic-uming \
+    ttf-wqy-zenhei \
+    ttf-wqy-microhei \
+    xfonts-wqy \
+    # clean up
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# Set up the Chrome PPA    
-RUN wget -qO - https://dl.google.com/linux/linux_signing_key.pub | gpg --dearmor -o /usr/share/keyrings/googlechrome-linux-keyring.gpg && \
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/googlechrome-linux-keyring.gpg] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list
+# a few environment variables to make NPM installs easier
+# good colors for most applications
+ENV TERM xterm
+# avoid million NPM install messages
+ENV npm_config_loglevel warn
+# allow installing when the main user is root
+ENV npm_config_unsafe_perm true
 
-# Update the package list and install chrome
-RUN apt-get update -y --no-install-recommends
-RUN apt-get install -y google-chrome-stable 
+# Node libraries
+RUN node -p process.versions
+
+# Show where Node loads required modules from
+RUN node -p 'module.paths'
+
+# versions of local tools
+RUN echo  " node version:    $(node -v) \n" \
+  "npm version:     $(npm -v) \n" \
+  "yarn version:    $(yarn -v) \n" \
+  "debian version:  $(cat /etc/debian_version) \n" \
+  "user:            $(whoami) \n"
+
+# Chrome dependencies
+RUN apt-get update
+RUN apt-get install -y fonts-liberation libappindicator3-1 xdg-utils
+
+# install Chrome browser
+ENV CHROME_VERSION 91.0.4472.114
+RUN wget -O /usr/src/google-chrome-stable_current_amd64.deb "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}-1_amd64.deb" && \
+  dpkg -i /usr/src/google-chrome-stable_current_amd64.deb ; \
+  apt-get install -f -y && \
+  rm -f /usr/src/google-chrome-stable_current_amd64.deb
+RUN google-chrome --version
+
+# "fake" dbus address to prevent errors
+# https://github.com/SeleniumHQ/docker-selenium/issues/87
+ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
+
+# Add zip utility - it comes in very handy
+RUN apt-get update && apt-get install -y zip
+
+# add codecs needed for video playback in firefox
+# https://github.com/cypress-io/cypress-docker-images/issues/150
+RUN apt-get install mplayer -y
 
 # Set up Chromedriver Environment variables
 RUN mkdir $CHROMEDRIVER_DIR
-
-# Install latest chrome dev package. following example: old: https://github.com/ebidel/lighthouse-ci/blob/master/builder/Dockerfile
-# new: https://gist.github.com/varyonic/dea40abcf3dd891d204ef235c6e8dd79
-# Download and install Chromedriver
-RUN CHROMEVER=$(google-chrome --product-version | grep -o "[^\.]*\.[^\.]*\.[^\.]*") && \
-    DRIVERVER=$(curl -s "https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$CHROMEVER") && \
-    wget -q --continue -P /chromedriver "http://chromedriver.storage.googleapis.com/$DRIVERVER/chromedriver_linux64.zip" && \
-    unzip /chromedriver/chromedriver* -d /chromedriver
 
 # Add jfrog cli
 RUN curl -fL https://getcli.jfrog.io | sh \
@@ -63,21 +107,6 @@ RUN curl -fL https://getcli.jfrog.io | sh \
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
 RUN chmod +x /usr/local/bin/dumb-init
-
-# a few environment variables to make NPM installs easier
-# good colors for most applications
-ENV TERM xterm
-# avoid million NPM install messages
-ENV npm_config_loglevel warn
-# allow installing when the main user is root
-ENV npm_config_unsafe_perm true
-
-# versions of local tools
-RUN echo  " node version:    $(node -v) \n" \
-  "npm version:     $(npm -v) \n" \
-  "yarn version:    $(yarn -v) \n" \
-  "debian version:  $(cat /etc/debian_version) \n" \
-  "user:            $(whoami) \n"
 
 USER node
 VOLUME /home/node
