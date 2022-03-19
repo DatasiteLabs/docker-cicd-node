@@ -6,5 +6,8 @@ set -o nounset
 readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 docker_version=$(cat VERSION)
+LOCAL_NAME=datasite/test-cicd-node
 
-docker build --no-cache --pull -t datasite/docker-cicd-node:"${docker_version}-chrome" -t datasite/docker-cicd-node:latest-chrome "${__dir}/"chrome-headless
+echo "Building ${LOCAL_NAME}"
+
+docker build --no-cache --pull -t "${LOCAL_NAME}:${docker_version}-chrome" "${__dir}/"chrome-headless
