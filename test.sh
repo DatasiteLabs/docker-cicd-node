@@ -7,6 +7,5 @@ readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 LOCAL_NAME=datasite/test-cicd-node
 
-echo "Building ${LOCAL_NAME}"
-
-docker build --no-cache --pull -t "${LOCAL_NAME}:latest-chrome" "${__dir}/"chrome-headless
+echo "Running tests against ${LOCAL_NAME}"
+docker run --rm -v "${__dir}/test:/home/node/test:rw" -w /home/node/test "${LOCAL_NAME}:latest-chrome" bash -c "npm ci; npm run test"

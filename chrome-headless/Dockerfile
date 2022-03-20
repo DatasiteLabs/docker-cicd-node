@@ -110,6 +110,8 @@ RUN chmod +x /usr/local/bin/dumb-init
 
 USER node
 VOLUME /home/node
+EXPOSE 9222
+EXPOSE 8080
 EXPOSE 3000
 EXPOSE 49152
 EXPOSE 4200

@@ -16,7 +16,7 @@ env:
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: datasite/docker-cicd-node
-
+  TEST_TAG: datasite/test-cicd-node:latest-chrome
 
 jobs:
   build:
@@ -66,8 +66,22 @@ jobs:
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        id: build-and-push
+      - name: Build and export to Docker
+        id: docker-build
+        uses: docker/build-push-action@v2.10.0
+        with:
+          context: ./chrome-headless
+          load: true
+          tags: ${{ env.TEST_TAG }}
+
+      - name: Test
+        id: test
+        # I would rather run rootless or as 'node' user like jenkins does, that is problematic here
+        run: |
+          docker run --rm --user root -v $(realpath .)/test:/home/node/test -w /home/node/test ${{ env.TEST_TAG }} bash -c "ls -la; npm ci; npm run test"
+          
+      - name: Build and push
+        id: docker-push
         uses: docker/build-push-action@v2.10.0
         with:
           context: ./chrome-headless
