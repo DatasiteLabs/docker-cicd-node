@@ -1,4 +1,4 @@
-FROM node:14.19.0-buster-slim
+FROM node:16.14-bullseye-slim
 LABEL version="1.2" maintainer="Kayla Altepeter"
 ENV CHROME_DRIVER_VERSION 99.0.4844.51
 ENV CHROMEDRIVER_DIR /chromedriver
@@ -67,21 +67,34 @@ RUN node -p 'module.paths'
 
 # versions of local tools
 RUN echo  " node version:    $(node -v) \n" \
-  "npm version:     $(npm -v) \n" \
-  "yarn version:    $(yarn -v) \n" \
-  "debian version:  $(cat /etc/debian_version) \n" \
-  "user:            $(whoami) \n"
+    "npm version:     $(npm -v) \n" \
+    "yarn version:    $(yarn -v) \n" \
+    "debian version:  $(cat /etc/debian_version) \n" \
+    "user:            $(whoami) \n"
 
 # Chrome dependencies
 RUN apt-get update
-RUN apt-get install -y fonts-liberation libappindicator3-1 xdg-utils
+RUN apt-get install -y \
+    fonts-liberation \
+    libcurl4 \
+    libcurl3-gnutls \
+    libcurl3-nss \
+    xdg-utils \
+    wget \
+    # clean up
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
-# install Chrome browser
-ENV CHROME_VERSION 91.0.4472.114
-RUN wget -O /usr/src/google-chrome-stable_current_amd64.deb "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_VERSION}-1_amd64.deb" && \
-  dpkg -i /usr/src/google-chrome-stable_current_amd64.deb ; \
-  apt-get install -f -y && \
-  rm -f /usr/src/google-chrome-stable_current_amd64.deb
+# install libappindicator3-1 - not included with Debian 11
+RUN wget --no-verbose /usr/src/libappindicator3-1_0.4.92-7_amd64.deb "http://ftp.us.debian.org/debian/pool/main/liba/libappindicator/libappindicator3-1_0.4.92-7_amd64.deb" && \
+    dpkg -i /usr/src/libappindicator3-1_0.4.92-7_amd64.deb ; \
+    apt-get install -f -y && \
+    rm -f /usr/src/libappindicator3-1_0.4.92-7_amd64.deb
+
+RUN wget -O /usr/src/google-chrome-stable_current_amd64.deb "http://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_DRIVER_VERSION}-1_amd64.deb" && \
+    dpkg -i /usr/src/google-chrome-stable_current_amd64.deb ; \
+    apt-get install -f -y && \
+    rm -f /usr/src/google-chrome-stable_current_amd64.deb
 RUN google-chrome --version
 
 # "fake" dbus address to prevent errors
@@ -89,7 +102,12 @@ RUN google-chrome --version
 ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
 
 # Add zip utility - it comes in very handy
-RUN apt-get update && apt-get install -y zip
+RUN apt-get update && apt-get install -y \
+    zip \
+    bzip2 \
+    # add codecs needed for video playback in firefox
+    # https://github.com/cypress-io/cypress-docker-images/issues/150
+    mplayer
 
 # add codecs needed for video playback in firefox
 # https://github.com/cypress-io/cypress-docker-images/issues/150
@@ -107,6 +125,8 @@ RUN curl -fL https://getcli.jfrog.io | sh \
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
 RUN chmod +x /usr/local/bin/dumb-init
+
+RUN npm install -g npm@8.5.5
 
 USER node
 VOLUME /home/node

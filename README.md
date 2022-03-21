@@ -10,17 +10,20 @@ Docker container for CI/CD builds that has:
 - JQ
 - Python
 
-
 [![Docker](https://github.com/DatasiteLabs/docker-cicd-node/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/DatasiteLabs/docker-cicd-node/actions/workflows/docker-publish.yml) ![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/DatasiteLabs/docker-cicd-node?sort=semver)
+
+This image was originally based off https://github.com/justinribeiro/dockerfiles/tree/master/chrome-headless of and is now heavily based off of https://github.com/cypress-io/cypress-docker-images.
 
 ## Chrome headless
 
 Example build command
+
 ```docker
 docker build --pull -t merrillcorporation/docker-cicd-node/chrome-headless:1 ./chrome-headless
 ```
 
 Run the following in your code workspace.
+
 ```docker
 docker run \
     -d -it --rm -p 3000:3000 \
@@ -32,6 +35,7 @@ docker run \
 ```
 
 Execute against container
+
 ```docker
 docker exec -it cicd-node-chrome bash
 ```
@@ -40,8 +44,9 @@ docker exec -it cicd-node-chrome bash
 
 #### e2e with protractor
 
-add the following to protractor config
-```
+Add the following to protractor config
+
+```javascript
 capabilities: {
     browserName: 'chrome',
     chromeOptions: {
@@ -51,6 +56,7 @@ capabilities: {
 ```
 
 Run example code. replace {appName} with your angular app
+
 ```bash
 cd ~/test
 npm run e2e -- --app {appname}

@@ -10,3 +10,4 @@ LOCAL_NAME=datasite/test-cicd-node
 echo "Building ${LOCAL_NAME}"
 
 docker build --no-cache --pull -t "${LOCAL_NAME}:latest-chrome" "${__dir}/"chrome-headless
+docker build -t test-cicd-node-consumer "${__dir}/test"
