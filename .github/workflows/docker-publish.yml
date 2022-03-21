@@ -78,9 +78,21 @@ jobs:
         id: test
         # I would rather run rootless or as 'node' user like jenkins does, that is problematic here
         run: |
-          docker run --rm --user root -v $(realpath .)/test:/home/node/test -w /home/node/test ${{ env.TEST_TAG }} bash -c "ls -la; npm ci; npm run test"
+          docker build -t "test-cicd-node-consumer" "$(realpath .)/test"
+          docker run --rm --user node test-cicd-node-consumer
+      # - name: Test
+      #   id: test
+      #   uses: addnab/docker-run-action@v3
+      #   with:
+      #     image: ${{ env.TEST_TAG }}
+      #     options: --rm -v ${{ github.workspace }}/test:/home/node/test:rw -w /home/node/test --user 1001
+      #     run: |
+      #       ls -la
+      #       whoami
+      #       npm ci
+      #       npm run test
           
-      - name: Build and push
+      - name: Push
         id: docker-push
         uses: docker/build-push-action@v2.10.0
         with:
