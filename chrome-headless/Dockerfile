@@ -1,4 +1,4 @@
-FROM node:16.14-bullseye-slim
+FROM node:lts-bullseye-slim
 LABEL version="1.2" maintainer="Kayla Altepeter"
 ENV CHROME_DRIVER_VERSION 99.0.4844.51
 ENV CHROMEDRIVER_DIR /chromedriver
