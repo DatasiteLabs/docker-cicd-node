@@ -4,10 +4,14 @@ set -o pipefail
 set -o nounset
 [[ ${DEBUG:-} == true ]] && set -o xtrace
 
-docker_version=$(cat VERSION)
+LOCAL_NAME=datasite/test-cicd-node
+echo "Running ${LOCAL_NAME}"
 
-docker run \
---rm -p 3000:3000 \
--t -d -u 1000:1000 -v "$(pwd)":/home/node/workspace -w /home/node/workspace \
---name docker-cicd-node-chrome \
-datasite/docker-cicd-node:"${docker_version}-chrome" cat
+# docker run \
+# --rm -it -p 3000:3000 \
+# -u 1000:1000 -v "$(pwd)":/home/node/workspace -w /home/node/workspace \
+# --name docker-cicd-node-local \
+# datasite/test-cicd-node bash
+
+# docker run -it -v "${__dir}/test:/home/node/test" -w /home/node/test --user node "${LOCAL_NAME}:latest-chrome" bash
+docker run -it -p 3000:3000 --user node  "${LOCAL_NAME}:latest-chrome" bash

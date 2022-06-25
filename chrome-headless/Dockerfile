@@ -29,6 +29,7 @@ RUN apt-get update && \
     libgconf-2-4 \
     libgbm-dev \
     libnss3 \
+    libnss3-tools \
     libxss1 \
     libasound2 \
     libxtst6 \
@@ -50,6 +51,17 @@ RUN apt-get update && \
     # clean up
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
+
+# Local certs
+RUN curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/amd64" && \
+  chmod +x mkcert-v*-linux-amd64 && \
+  mv mkcert-v*-linux-amd64 /usr/local/bin/mkcert
+
+RUN mkcert -install && \
+    mkcert example.com "*.example.com" example.test localhost 127.0.0.1 ::1 && \
+    mkdir -p /home/node/certs && \
+    mv *.pem /home/node/certs/ && \
+    chown -R node:node /home/node/certs
 
 # a few environment variables to make NPM installs easier
 # good colors for most applications
