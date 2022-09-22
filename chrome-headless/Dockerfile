@@ -4,6 +4,7 @@ ENV CHROME_DRIVER_VERSION 99.0.4844.51
 ENV CHROMEDRIVER_DIR /chromedriver
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
+ENV GH_CLI_VERSION 2.16.0
 
 # We need wget to set up the PPA and xvfb to have a virtual screen and unzip to install the Chromedriver
 RUN apt-get update && \
@@ -132,6 +133,13 @@ RUN mkdir $CHROMEDRIVER_DIR
 RUN curl -fL https://getcli.jfrog.io | sh \
     && mv ./jfrog /usr/local/bin/jfrog \
     && chmod 777 /usr/local/bin/jfrog
+
+# Add github cli
+RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt update \
+    && apt install gh=${GH_CLI_VERSION} -y
 
 # install dumb-init
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
