@@ -4,7 +4,8 @@ set -o pipefail
 set -o nounset
 [[ ${DEBUG:-} == true ]] && set -o xtrace
 
-LOCAL_NAME=datasite/test-cicd-node
+DOCKER_REPO=0.0.0.0:5001
+LOCAL_NAME=${DOCKER_REPO}/datasite/test-cicd-node
 echo "Running ${LOCAL_NAME}"
 
 # docker run \

@@ -5,9 +5,12 @@ set -o nounset
 [[ ${DEBUG:-} == true ]] && set -o xtrace
 readonly __dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-LOCAL_NAME=datasite/test-cicd-node
+DOCKER_REPO=0.0.0.0:5001
+LOCAL_NAME=${DOCKER_REPO}/datasite/test-cicd-node
 
 echo "Building ${LOCAL_NAME}"
 
-docker build --no-cache --pull -t "${LOCAL_NAME}:latest-chrome" "${__dir}/"chrome-headless
-docker build -t test-cicd-node-consumer "${__dir}/test"
+# Google Chrome is not currently supported on ARM64
+docker buildx build --builder=container --platform=linux/amd64 --output=type=docker --pull -t "${LOCAL_NAME}:latest-chrome" "${__dir}/"chrome-headless
+# docker pull ${LOCAL_NAME}:latest-chrome
+docker buildx build --builder=container --platform=linux/amd64 --output=type=docker -t test-cicd-node-consumer --build-arg=DOCKER_REPO=${DOCKER_REPO} "${__dir}/test"

@@ -61,3 +61,52 @@ Run example code. replace {appName} with your angular app
 cd ~/test
 npm run e2e -- --app {appname}
 ```
+
+## The test app
+
+This app uses a couple of generated tests to excercise the dependencies.
+
+### Updating Cypress
+
+- [ ] Update `package.json` engines if changing.
+- [ ] Update any Dockerfile depenencies that can be updated
+
+```bash
+rm -rf test/cypress
+npm rm --save-dev cypress
+npm i --save-dev cypress@12
+npx cypress open
+```
+
+After opening the Cypress app it will prompt you with options.
+
+- [ ] If there is a config migration, execute that.
+- [ ] Generate example tests
+
+### Mongo test app
+
+See [README](./test/mongo/README.md) for the mongo test suite on base tests
+
+## Local Testing
+
+To use the build scripts, use docker buildx with multiplatform.
+
+Create a builder
+
+```bash
+docker buildx create \
+  --name container \
+  --driver=docker-container
+```
+
+Setup a local registry
+
+```bash
+docker run -d -p 5001:5000 --restart=always --name registry registry:2
+```
+
+Run the scripts
+
+```bash
+./build.sh
+```
