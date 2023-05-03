@@ -16,7 +16,7 @@ env:
   REGISTRY: docker.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: datasite/docker-cicd-node
-  TEST_TAG: datasite/test-cicd-node:latest-chrome
+  TEST_TAG: localhost:5000/datasite/test-cicd-node:latest-chrome
 
 jobs:
   build:
@@ -29,9 +29,18 @@ jobs:
       # with sigstore/fulcio when running outside of PRs.
       id-token: write
 
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -39,7 +48,7 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: sigstore/cosign-installer@main
         with:
-          cosign-release: 'v1.9.0'
+          cosign-release: 'v2.0.2'
 
 
       # Workaround: https://github.com/docker/build-push-action/issues/461
@@ -71,14 +80,16 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           context: ./chrome-headless
+          platforms: linux/amd64
           load: true
           tags: ${{ env.TEST_TAG }}
 
       - name: Test
         id: test
         # I would rather run rootless or as 'node' user like jenkins does, that is problematic here
+        # Google chrome doesn't support arm
         run: |
-          docker build -t "test-cicd-node-consumer" "$(realpath .)/test"
+          docker build -t "test-cicd-node-consumer" --build-arg=DOCKER_REPO=localhost:5000 "$(realpath .)/test"
           docker run --rm --user node test-cicd-node-consumer
       # - name: Test
       #   id: test
@@ -91,10 +102,10 @@ jobs:
       #       whoami
       #       npm ci
       #       npm run test
-          
+
       - name: Push
         id: docker-push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: ./chrome-headless
           push: ${{ github.event_name != 'pull_request' }}
