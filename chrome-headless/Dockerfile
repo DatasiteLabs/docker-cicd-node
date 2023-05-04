@@ -1,4 +1,4 @@
-FROM node:16.19.1-bullseye-slim
+FROM node:16.20-bullseye-slim
 ARG TARGETPLATFORM
 ARG TARGETARCH
 LABEL version="1.2" maintainer="Kayla Altepeter"
