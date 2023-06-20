@@ -1,13 +1,15 @@
-FROM node:16.19.1-bullseye-slim
+FROM node:18.16.0-bullseye-slim
 ARG TARGETPLATFORM
 ARG TARGETARCH
 LABEL version="1.2" maintainer="Kayla Altepeter"
 # https://github.com/cypress-io/cypress-docker-images/blob/master/factory/.env should have compatible versions
-ENV CHROME_DRIVER_VERSION 112.0.5615.121
+ENV CHROME_DRIVER_VERSION 113.0.5672.92
+ENV EDGE_VERSION 113.0.1774.35-1
+ENV FIREFOX_VERSION 113.0.2
 ENV CHROMEDRIVER_DIR /chromedriver
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
-ENV GH_CLI_VERSION 2.28.0
+ENV GH_CLI_VERSION 2.31.0
 
 # We need wget to set up the PPA and xvfb to have a virtual screen and unzip to install the Chromedriver
 RUN apt-get update && \
@@ -26,6 +28,7 @@ RUN apt-get update && \
     unzip \
     curl \
     libcurl4 \
+    libvulkan1 \
     # cypress deps: https://docs.cypress.io/guides/continuous-integration/introduction#Dependencies
     libgtk2.0-0 \
     libgtk-3-0 \
@@ -55,6 +58,8 @@ RUN apt-get update && \
     ttf-wqy-zenhei \
     ttf-wqy-microhei \
     xfonts-wqy \
+    # mongo
+    libssl-dev \
     # clean up
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
@@ -84,15 +89,8 @@ RUN node -p process.versions
 # Show where Node loads required modules from
 RUN node -p 'module.paths'
 
-# versions of local tools
-RUN echo  " node version:    $(node -v) \n" \
-    "npm version:     $(npm -v) \n" \
-    "yarn version:    $(yarn -v) \n" \
-    "debian version:  $(cat /etc/debian_version) \n" \
-    "user:            $(whoami) \n"
-
 # Chrome dependencies
-# https://github.com/cypress-io/cypress-docker-images/blob/master/browsers/node16.18.0-chrome107-ff106-edge/Dockerfile
+# https://github.com/cypress-io/cypress-docker-images/blob/master/browsers/node18.12.0-chrome103-ff107/Dockerfile
 RUN apt-get update && \
     apt-get install -y \
     fonts-liberation \
@@ -124,15 +122,32 @@ RUN wget --no-verbose /usr/src/libappindicator3-1_0.4.92-7.deb "https://ftp.us.d
     rm -f /usr/src/libappindicator3-1_0.4.92-7.deb
 
 RUN node -p "process.arch === 'arm64' ? 'Not downloading Chrome since we are on arm64: https://crbug.com/677140' : process.exit(1)" || \
-    wget -O /usr/src/google-chrome-stable_current.deb "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_DRIVER_VERSION}-1_${TARGETARCH}.deb" && \
+    (wget -O /usr/src/google-chrome-stable_current.deb "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_DRIVER_VERSION}-1_${TARGETARCH}.deb" && \
     dpkg -i /usr/src/google-chrome-stable_current.deb ; \
     apt-get install -f -y && \
-    rm -f /usr/src/google-chrome-stable_current.deb && \
-    google-chrome --version
+    rm -f /usr/src/google-chrome-stable_current.deb)
 
 # "fake" dbus address to prevent errors
 # https://github.com/SeleniumHQ/docker-selenium/issues/87
 ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
+
+# install Firefox browser
+RUN node -p "process.arch === 'arm64' ? 'Not downloading Firefox since we are on arm64: https://bugzilla.mozilla.org/show_bug.cgi?id=1678342' : process.exit(1)" || \
+  (wget --no-verbose -O /tmp/firefox.tar.bz2 "https://download-installer.cdn.mozilla.net/pub/firefox/releases/${FIREFOX_VERSION}/linux-x86_64/en-US/firefox-${FIREFOX_VERSION}.tar.bz2" && \
+  tar -C /opt -xjf /tmp/firefox.tar.bz2 && \
+  rm /tmp/firefox.tar.bz2 && \
+  ln -fs /opt/firefox/firefox /usr/bin/firefox)
+
+RUN node -p "process.arch === 'arm64' ? 'Not downloading Edge since we are on arm64: https://techcommunity.microsoft.com/t5/discussions/edge-for-linux-arm64/m-p/1532272' : process.exit(1)" || \
+  (curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
+  install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/ && \
+  sh -c 'echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-stable.list' && \
+  rm microsoft.gpg && \
+  ## Install Edge
+  apt-get update && \
+  apt-get install -y microsoft-edge-stable && \
+  ## Add a link to the browser that allows Cypress to find it
+  ln -s /usr/bin/microsoft-edge /usr/bin/edge)
 
 # Set up Chromedriver Environment variables
 RUN mkdir $CHROMEDRIVER_DIR
@@ -154,7 +169,19 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
 RUN chmod +x /usr/local/bin/dumb-init
 
-RUN npm install -g npm@8
+RUN npm install -g npm
+
+# versions of local tools
+RUN echo  "node version:    $(node -v) \n" \
+        "npm version:     $(npm -v) \n" \
+        "yarn version:    $(yarn -v) \n" \
+        "debian version:  $(cat /etc/debian_version) \n" \
+        "Chrome version:  $(google-chrome --version) \n" \
+        "Firefox version: $(firefox --version) \n" \
+        "Edge version:    $(edge --version) \n" \
+        "git version:     $(git --version) \n" \
+        "whoami:          $(whoami) \n"
+
 
 USER node
 VOLUME /home/node
