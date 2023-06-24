@@ -7,4 +7,7 @@ RUN echo "current user: $(whoami)" && \
 COPY --chown=node ./ /home/node/test
 WORKDIR /home/node/test
 
-ENTRYPOINT [ "bash", "-c", "ls -la; npm ci; Xvfb :99 & export DISPLAY=:99; npm run test; pkill Xvfb" ]
+USER node
+RUN npm ci
+
+ENTRYPOINT [ "bash", "-c", "./execute-test.sh" ]

@@ -1,13 +1,10 @@
-const mongoose = require("mongoose");
-
-const dbHandler = require("../util/db-handler");
+const {connect, clearDatabase, closeDatabase} = require("../util/db-handler");
 const productService = require("./product");
-const productModel = require("../models/product");
 
-beforeAll(async () => await dbHandler.connect());
-afterEach(async () => await dbHandler.clearDatabase());
+beforeAll(async () => await connect());
+afterEach(async () => await clearDatabase());
 afterAll(async () => {
-  await dbHandler.closeDatabase();
+  await closeDatabase();
 });
 
 /**
@@ -20,6 +17,7 @@ describe("product ", () => {
   it("can be created correctly", async () => {
     expect(
       await (async () => await productService.create(productComplete))
+    // @ts-ignore
     ).not.toThrow();
   });
 });

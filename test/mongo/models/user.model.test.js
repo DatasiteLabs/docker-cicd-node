@@ -8,12 +8,11 @@ const {
 const dbHandler = require('../util/db-handler');
 
 beforeAll(async () => {
-    await dbHandler.connect();
-    await dbHandler.clearDatabase();
+  await dbHandler.connect();
+  await dbHandler.clearDatabase();
 });
 // afterEach(async () => await dbHandler.clearDatabase());
 afterAll(async () => await dbHandler.closeDatabase());
-
 
 describe('User Model Test Suite', () => {
   test('should validate saving a new student user successfully', async () => {
@@ -24,6 +23,10 @@ describe('User Model Test Suite', () => {
     const savedStudentUser = await validStudentUser.save();
 
     validateNotEmpty(savedStudentUser);
+
+    if (!savedStudentUser.local) {
+      throw new Error('local is not defined');
+    }
 
     validateStringEquality(savedStudentUser.role, fakeUserData.role);
     validateStringEquality(savedStudentUser.local.email, fakeUserData.email);

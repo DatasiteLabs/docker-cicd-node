@@ -17,6 +17,7 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: datasite/docker-cicd-node
   TEST_TAG: localhost:5000/datasite/test-cicd-node:latest-chrome
+  TEST_CONSUMER_TAG: localhost:5000/datasite/test-cicd-node-consumer
 
 jobs:
   build:
@@ -54,6 +55,8 @@ jobs:
       # Workaround: https://github.com/docker/build-push-action/issues/461
       - name: Setup Docker buildx
         uses: docker/setup-buildx-action@v2
+        with:
+          driver-opts: network=host
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
@@ -75,33 +78,30 @@ jobs:
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and export to Docker
+      - name: Build and export container to Docker
         id: docker-build
         uses: docker/build-push-action@v3
         with:
           context: ./chrome-headless
-          platforms: linux/amd64
-          load: true
+          # Google chrome doesn't support arm
+          platforms: linux/amd64,linux/arm64
+          push: true
           tags: ${{ env.TEST_TAG }}
+
+      - name: Build and export consumer test container to Docker
+        id: docker-build-consumer
+        uses: docker/build-push-action@v3
+        with:
+          context: ./test
+          platforms: linux/amd64
+          build-args: DOCKER_REPO=localhost:5000
+          load: true
+          tags: ${{ env.TEST_CONSUMER_TAG }}
 
       - name: Test
         id: test
-        # I would rather run rootless or as 'node' user like jenkins does, that is problematic here
-        # Google chrome doesn't support arm
         run: |
-          docker build -t "test-cicd-node-consumer" --build-arg=DOCKER_REPO=localhost:5000 "$(realpath .)/test"
-          docker run --rm --user node test-cicd-node-consumer
-      # - name: Test
-      #   id: test
-      #   uses: addnab/docker-run-action@v3
-      #   with:
-      #     image: ${{ env.TEST_TAG }}
-      #     options: --rm -v ${{ github.workspace }}/test:/home/node/test:rw -w /home/node/test --user 1001
-      #     run: |
-      #       ls -la
-      #       whoami
-      #       npm ci
-      #       npm run test
+          docker run --rm --user node ${{ env.TEST_CONSUMER_TAG }}
 
       - name: Push
         id: docker-push
