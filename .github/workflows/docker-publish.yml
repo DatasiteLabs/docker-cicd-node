@@ -87,6 +87,8 @@ jobs:
           platforms: linux/amd64,linux/arm64
           push: true
           tags: ${{ env.TEST_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Build and export consumer test container to Docker
         id: docker-build-consumer
@@ -97,6 +99,8 @@ jobs:
           build-args: DOCKER_REPO=localhost:5000
           load: true
           tags: ${{ env.TEST_CONSUMER_TAG }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
 
       - name: Test
         id: test
