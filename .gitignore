@@ -136,3 +136,5 @@ test/cypress/videos/*
 test/cypress/fixtures/profile.json
 test/cypress/fixtures/users.json
 !test/cypress/videos/.gitkeep
+
+*.pem

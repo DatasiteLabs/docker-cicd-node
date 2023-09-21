@@ -102,11 +102,17 @@ docker buildx create \
 Setup a local registry
 
 ```bash
-docker run -d -p 5001:5000 --restart=always --name registry registry:2
+./local_registry.sh
 ```
 
 Run the scripts
 
+The localdomain can't be localhost, 0.0.0.0, 127.0.0.1 or others on the insecure repository list, port is 5002.
+
+Use: 'host.docker.internal'
+
+Run docker info to see list.
+
 ```bash
-./build.sh
+./build.sh (localdomain:5002) # to pass in a local domain, edit hostsfile
 ```

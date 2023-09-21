@@ -1,15 +1,22 @@
-FROM node:18.17.1-bullseye-slim
+FROM --platform=$BUILDPLATFORM node:18.17.1-bullseye-slim
 ARG TARGETPLATFORM
+ARG BUILDPLATFORM
 ARG TARGETARCH
+RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM with $TARGETARCH"
 LABEL version="1.2" maintainer="Kayla Altepeter"
 # https://github.com/cypress-io/cypress-docker-images/blob/master/factory/.env should have compatible versions
-ENV CHROME_DRIVER_VERSION 113.0.5672.92
-ENV EDGE_VERSION 113.0.1774.35-1
-ENV FIREFOX_VERSION 113.0.2
+ENV CHROME_DRIVER_VERSION 114.0.5735.90
+# ENV EDGE_VERSION 113.0.1774.35-1
+ENV FIREFOX_VERSION 114.0.2
 ENV CHROMEDRIVER_DIR /chromedriver
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
 ENV GH_CLI_VERSION 2.31.0
+
+RUN type -p curl >/dev/null || (apt update && apt install curl -y); \
+    curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
 
 # We need wget to set up the PPA and xvfb to have a virtual screen and unzip to install the Chromedriver
 RUN apt-get update && \
@@ -65,9 +72,9 @@ RUN apt-get update && \
     && apt-get clean
 
 # Local certs
-RUN curl -JLO "https://dl.filippo.io/mkcert/latest?for=linux/${TARGETARCH}" && \
-  chmod +x mkcert-v*-linux-${TARGETARCH} && \
-  mv mkcert-v*-linux-${TARGETARCH} /usr/local/bin/mkcert
+RUN curl -JLO "https://dl.filippo.io/mkcert/latest?for=${TARGETPLATFORM}" \
+    && chmod +x mkcert-v*-linux-* \
+    && cp mkcert-v*-linux-* /usr/local/bin/mkcert
 
 RUN mkcert -install && \
     mkcert example.com "*.example.com" example.test localhost 127.0.0.1 ::1 && \
@@ -84,7 +91,9 @@ ENV npm_config_loglevel warn
 ENV npm_config_unsafe_perm true
 
 # Node libraries
-RUN node -p process.versions
+RUN echo "process details:\n" \
+    && node -p process.versions \
+    && node -p process.arch
 
 # Show where Node loads required modules from
 RUN node -p 'module.paths'
@@ -121,33 +130,54 @@ RUN wget --no-verbose /usr/src/libappindicator3-1_0.4.92-7.deb "https://ftp.us.d
     apt-get install -f -y && \
     rm -f /usr/src/libappindicator3-1_0.4.92-7.deb
 
-RUN node -p "process.arch === 'arm64' ? 'Not downloading Chrome since we are on arm64: https://crbug.com/677140' : process.exit(1)" || \
-    (wget -O /usr/src/google-chrome-stable_current.deb "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_DRIVER_VERSION}-1_${TARGETARCH}.deb" && \
-    dpkg -i /usr/src/google-chrome-stable_current.deb ; \
-    apt-get install -f -y && \
-    rm -f /usr/src/google-chrome-stable_current.deb)
+RUN set -eux; \
+    if [ "${TARGETARCH}" = "arm64" ]; then \
+        apt-get update && apt-get install -y chromium \
+        # clean up
+        && rm -rf /var/lib/apt/lists/* \
+        && apt-get clean; \
+    else \
+        echo "Skipping Chromium installation since we are NOT on arm64"; \
+    fi
+
+RUN set -eux; \
+    if [ "${TARGETARCH}" = "arm64" ]; then \
+        echo "Skipping Chrome since we are on arm64: https://crbug.com/677140"; \
+    else \
+        wget -O /usr/src/google-chrome-stable_current.deb "https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_${CHROME_DRIVER_VERSION}-1_${TARGETARCH}.deb" && \
+        dpkg -i /usr/src/google-chrome-stable_current.deb ; \
+        apt-get install -f -y && \
+        rm -f /usr/src/google-chrome-stable_current.deb; \
+    fi
 
 # "fake" dbus address to prevent errors
 # https://github.com/SeleniumHQ/docker-selenium/issues/87
 ENV DBUS_SESSION_BUS_ADDRESS=/dev/null
 
-# install Firefox browser
-RUN node -p "process.arch === 'arm64' ? 'Not downloading Firefox since we are on arm64: https://bugzilla.mozilla.org/show_bug.cgi?id=1678342' : process.exit(1)" || \
-  (wget --no-verbose -O /tmp/firefox.tar.bz2 "https://download-installer.cdn.mozilla.net/pub/firefox/releases/${FIREFOX_VERSION}/linux-x86_64/en-US/firefox-${FIREFOX_VERSION}.tar.bz2" && \
-  tar -C /opt -xjf /tmp/firefox.tar.bz2 && \
-  rm /tmp/firefox.tar.bz2 && \
-  ln -fs /opt/firefox/firefox /usr/bin/firefox)
+RUN set -eux; \
+    if [ "${TARGETARCH}" = "arm64" ]; then \
+        echo "Skipping Firefox since we are on arm64: https://bugzilla.mozilla.org/show_bug.cgi?id=1678342"; \
+    else \
+        wget --no-verbose -O /tmp/firefox.tar.bz2 "https://download-installer.cdn.mozilla.net/pub/firefox/releases/${FIREFOX_VERSION}/linux-x86_64/en-US/firefox-${FIREFOX_VERSION}.tar.bz2" && \
+        tar -C /opt -xjf /tmp/firefox.tar.bz2 && \
+        rm /tmp/firefox.tar.bz2 && \
+        ln -fs /opt/firefox/firefox /usr/bin/firefox; \
+    fi
 
-RUN node -p "process.arch === 'arm64' ? 'Not downloading Edge since we are on arm64: https://techcommunity.microsoft.com/t5/discussions/edge-for-linux-arm64/m-p/1532272' : process.exit(1)" || \
-  (curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
-  install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/ && \
-  sh -c 'echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-stable.list' && \
-  rm microsoft.gpg && \
-  ## Install Edge
-  apt-get update && \
-  apt-get install -y microsoft-edge-stable && \
-  ## Add a link to the browser that allows Cypress to find it
-  ln -s /usr/bin/microsoft-edge /usr/bin/edge)
+RUN set -eux; \
+    if [ "${TARGETARCH}" = "arm64" ]; then \
+        echo "Skipping Edge since we are on arm64: https://techcommunity.microsoft.com/t5/discussions/edge-for-linux-arm64/m-p/1532272"; \
+    else \
+        curl https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > microsoft.gpg && \
+        install -o root -g root -m 644 microsoft.gpg /etc/apt/trusted.gpg.d/ && \
+        sh -c 'echo "deb [arch=${TARGETARCH}] https://packages.microsoft.com/repos/edge stable main" > /etc/apt/sources.list.d/microsoft-edge-stable.list' && \
+        rm microsoft.gpg && \
+        ## Install Edge
+        apt-get update && \
+        apt-get install -y microsoft-edge-stable && \
+        ## Add a link to the browser that allows Cypress to find it
+        ln -s /usr/bin/microsoft-edge /usr/bin/edge; \
+    fi
 
 # Set up Chromedriver Environment variables
 RUN mkdir $CHROMEDRIVER_DIR
@@ -157,25 +187,19 @@ RUN curl -fL https://getcli.jfrog.io | sh \
     && mv ./jfrog /usr/local/bin/jfrog \
     && chmod 777 /usr/local/bin/jfrog
 
-# Add github cli
-RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt update \
-    && apt install gh=${GH_CLI_VERSION} -y
-
 # install dumb-init
 # https://engineeringblog.yelp.com/2016/01/dumb-init-an-init-for-docker.html
 RUN wget -O /usr/local/bin/dumb-init https://github.com/Yelp/dumb-init/releases/download/v1.2.5/dumb-init_1.2.5_x86_64
 RUN chmod +x /usr/local/bin/dumb-init
 
-RUN npm install -g npm
+# RUN npm install -g npm
 
 # versions of local tools
 RUN echo  "node version:    $(node -v) \n" \
         "npm version:     $(npm -v) \n" \
         "yarn version:    $(yarn -v) \n" \
         "debian version:  $(cat /etc/debian_version) \n" \
+        "Chrome version:  $(chromium --version) \n" \
         "Chrome version:  $(google-chrome --version) \n" \
         "Firefox version: $(firefox --version) \n" \
         "Edge version:    $(edge --version) \n" \
