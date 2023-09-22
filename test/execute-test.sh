@@ -6,5 +6,8 @@ set -o nounset
 
 ls -la
 Xvfb :99 & export DISPLAY=:99
-npm run test
+
+npm run installed-browsers
+npm run ci:e2e -- -p e2e:electron $(npm run installed-browsers | grep "cypress run --browser" | sed -e 's/- cypress run --browser \(.*\)/e2e:\1/' | tr '\n' ' ')
+npm run ci:test
 pkill Xvfb

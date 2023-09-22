@@ -8,10 +8,13 @@
   },
   "scripts": {
     "cypress:open": "cypress open",
-    "e2e:chrome": "cypress run --browser=chrome",
-    "e2e:firefox": "cypress run --browser=firefox",
-    "e2e:electron": "cypress run",
-    "ci:e2e": "npm-run-all -l -p e2e:**",
+    "installed-browsers": "cypress info",
+    "e2e:chrome": "cypress run --browser=chrome --",
+    "e2e:firefox": "cypress run --browser=firefox --",
+    "e2e:chromium": "cypress run --browser=chromium --",
+    "e2e:edge": "cypress run --browser=edge --",
+    "e2e:electron": "cypress run --",
+    "ci:e2e": "npm-run-all -l",
     "ci:test": "jest --runInBand --detectOpenHandles ./mongo",
     "test": "npm-run-all -l -s ci:**"
   },
