@@ -14,7 +14,7 @@ if ! command -v mkcert > /dev/null; then
 fi
 
 mkcert -install
-mkcert host.docker.internal
+mkcert host.docker.internal 0.0.0.0 127.0.0.1 ::1
 mv *.pem "${cert_dir}"
 
 if [[ ! -d "${HOME}/.docker/certs.d/" ]]; then
@@ -23,6 +23,8 @@ fi
 
 cp "${cert_dir}"/*.pem "${HOME}/.docker/certs.d/"
 cp "$(mkcert -CAROOT)"/rootCA.pem "${HOME}/.docker/certs.d/"
+# this gets annoying, may be necessary to trust the cert
+# sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain "${HOME}/.docker/certs.d/rootCA.pem"
 
 existing_container_id=$(docker ps | grep registry | awk '{print $1}' || true)
 if [[ ! -z "${existing_container_id}" ]]; then
@@ -33,10 +35,17 @@ fi
 docker run -d \
   --restart=always \
   --name registry \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
   -p 5001:5000 \
-  -v "${cert_dir}":/certs \
-  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
-  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/host.docker.internal.pem \
-  -e REGISTRY_HTTP_TLS_KEY=/certs/host.docker.internal-key.pem \
-  -p 443:443 \
   registry:2
+
+  # docker run -d \
+  # --restart=always \
+  # --name registry \
+  # -p 5000:5000 \
+  # -v "${cert_dir}":/certs \
+  # -e REGISTRY_HTTP_ADDR=0.0.0.0:5000 \
+  # -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/host.docker.internal+3.pem \
+  # -e REGISTRY_HTTP_TLS_KEY=/certs/host.docker.internal+3-key.pem \
+  # -p 5001:443 \
+  # registry:2
