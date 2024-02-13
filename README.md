@@ -74,7 +74,7 @@ This app uses a couple of generated tests to excercise the dependencies.
 ```bash
 rm -rf test/cypress
 npm rm --save-dev cypress
-npm i --save-dev cypress@12
+npm i --save-dev cypress
 npx cypress open
 ```
 
@@ -107,12 +107,13 @@ Setup a local registry
 
 Run the scripts
 
-The localdomain can't be localhost, 0.0.0.0, 127.0.0.1 or others on the insecure repository list, port is 5002.
+The localdomain can't be localhost, 0.0.0.0, 127.0.0.1 or others on the insecure repository list, port is 5001.
 
 Use: 'host.docker.internal'
 
 Run docker info to see list.
 
 ```bash
-./build.sh (localdomain:5002) # to pass in a local domain, edit hostsfile
+# ./build.sh <platforms> <localdomain:port>
+./build.sh linux/arm64 host.docker.internal:5001 # to pass in a local domain, edit hostsfile
 ```

@@ -1,17 +1,17 @@
-FROM --platform=$BUILDPLATFORM node:18.17.1-bullseye-slim
+FROM --platform=$BUILDPLATFORM node:20.11.0-bullseye-slim
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 ARG TARGETARCH
 RUN echo "I am running on $BUILDPLATFORM, building for $TARGETPLATFORM with $TARGETARCH"
 LABEL version="1.2" maintainer="Kayla Altepeter"
 # https://github.com/cypress-io/cypress-docker-images/blob/master/factory/.env should have compatible versions
-ENV CHROME_DRIVER_VERSION 114.0.5735.90
-# ENV EDGE_VERSION 113.0.1774.35-1
-ENV FIREFOX_VERSION 114.0.2
+ENV CHROME_DRIVER_VERSION 121.0.6167.85-1
+# ENV EDGE_VERSION 121.0.2277.83-1
+ENV FIREFOX_VERSION 120.0
 ENV CHROMEDRIVER_DIR /chromedriver
 # Put Chromedriver into the PATH
 ENV PATH $CHROMEDRIVER_DIR:$PATH
-ENV GH_CLI_VERSION 2.31.0
+ENV GH_CLI_VERSION 2.43.1
 
 RUN type -p curl >/dev/null || (apt update && apt install curl -y); \
     curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
@@ -67,9 +67,13 @@ RUN apt-get update && \
     xfonts-wqy \
     # mongo
     libssl-dev \
+    # mkcert
+    libnss3-tools \
     # clean up
     && rm -rf /var/lib/apt/lists/* \
-    && apt-get clean
+    && apt-get clean \
+    # build font cache, https://github.com/jim3ma/docker-leanote
+    && fc-cache
 
 # Local certs
 RUN curl -JLO "https://dl.filippo.io/mkcert/latest?for=${TARGETPLATFORM}" \
